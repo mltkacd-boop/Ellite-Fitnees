@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELITE FITNESS - AI Gym Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ELITE FITNESS - PREMIUM GOLDEN BLACK AESTHETIC */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Floating Button (Minimized State) */
+        .fitbot-floating-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(145deg, #0a0a0a 0%, #2a2a2a 100%);
+            border-radius: 35%;
+            cursor: pointer;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(212, 175, 55, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1.5px solid rgba(212, 175, 55, 0.4);
+            overflow: hidden;
+        }
+
+        .fitbot-floating-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(212, 175, 55, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            transition: all 0.5s;
+        }
+
+        .fitbot-floating-button:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 
+                0 15px 35px rgba(212, 175, 55, 0.25),
+                inset 0 1px 0 rgba(212, 175, 55, 0.5);
+            border-color: #D4AF37;
+        }
+
+        .fitbot-floating-button:hover::before {
+            animation: shimmer 0.5s ease;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .fitbot-floating-button .trainer-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .fitbot-floating-button .trainer-avatar i {
+            font-size: 22px;
+            color: #000;
+        }
+
+        /* Professional Trainer Image Alternative */
+        .trainer-img-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trainer-img-wrapper::before {
+            content: '💪';
+            font-size: 24px;
+            position: absolute;
+            animation: flex 2s ease-in-out infinite;
+        }
+
+        @keyframes flex {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(-5deg); }
+        }
+
+        .fitbot-notification {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #D4AF37 0%, #F4E4C1 100%);
+            border-radius: 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 11px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+            }
+            50% { 
+                transform: scale(1.1); 
+                box-shadow: 0 2px 12px rgba(212, 175, 55, 0.6);
+            }
+        }
+
+        /* Chat Container */
+        .fitbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 650px;
+            background: linear-gradient(145deg, #0f0f0f 0%, #1a1a1a 100%);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(212, 175, 55, 0.1),
+                inset 0 1px 0 rgba(212, 175, 55, 0.05);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9999;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .fitbot-container.active {
+            display: flex;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Header */
+        .fitbot-header {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1f1f1f 100%);
+            color: #D4AF37;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fitbot-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                #D4AF37 20%, 
+                #F4E4C1 50%, 
+                #D4AF37 80%, 
+                transparent 100%);
+            opacity: 0.6;
+        }
+
+        .fitbot-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fitbot-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 4px 12px rgba(212, 175, 55, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            font-size: 28px;
+        }
+
+        .fitbot-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, #F4E4C1, #B8860B);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+        }
+
+        /* Professional Trainer Avatar Styles */
+        .trainer-icon-pro {
+            width: 35px;
+            height: 35px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trainer-icon-pro i {
+            font-size: 24px;
+            color: #000;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Stacked Icon Effect for Trainer */
+        .trainer-stack {
+            position: relative;
+            display: inline-block;
+        }
+
+        .trainer-stack .fa-dumbbell {
+            position: absolute;
+            font-size: 14px;
+            color: #000;
+            top: -5px;
+            right: -5px;
+            transform: rotate(-45deg);
+        }
+
+        .fitbot-info h3 {
+            font-size: 18px;
+            margin-bottom: 2px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #D4AF37 0%, #F4E4C1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .fitbot-status {
+            font-size: 11px;
+            opacity: 0.8;
+            color: #B8860B;
+            font-weight: 500;
+        }
+
+        .fitbot-close {
+            background: none;
+            border: none;
+            color: #D4AF37;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 30%;
+        }
+
+        .fitbot-close:hover {
+            transform: rotate(90deg);
+            color: #F4E4C1;
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .fitbot-close svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Quick Actions */
+        .fitbot-quick-actions {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(26, 26, 26, 0.5);
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .fitbot-quick-btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 10px 14px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            background: linear-gradient(135deg, rgba(10, 10, 10, 0.9) 0%, rgba(30, 30, 30, 0.9) 100%);
+            color: #D4AF37;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fitbot-quick-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(212, 175, 55, 0.2), 
+                transparent);
+            transition: left 0.5s;
+        }
+
+        .fitbot-quick-btn:hover {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(212, 175, 55, 0.3),
+                inset 0 1px 0 rgba(244, 228, 193, 0.4);
+            border-color: #D4AF37;
+        }
+
+        .fitbot-quick-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Messages Area */
+        .fitbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%);
+            position: relative;
+        }
+
+        .fitbot-messages::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(180deg, #0f0f0f 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .fitbot-message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fitbot-message.user {
+            text-align: right;
+        }
+
+        .fitbot-message.user .message-content {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: #000;
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 20px 20px 6px 20px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-weight: 500;
+            box-shadow: 
+                0 4px 12px rgba(212, 175, 55, 0.2),
+                inset 0 1px 0 rgba(244, 228, 193, 0.3);
+        }
+
+        .fitbot-message.bot .message-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            color: #e0e0e0;
+            display: inline-block;
+            padding: 12px 16px;
+            border-radius: 20px 20px 20px 6px;
+            max-width: 80%;
+            word-wrap: break-word;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            box-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(212, 175, 55, 0.05);
+        }
+
+        .fitbot-message.bot .message-content strong {
+            color: #D4AF37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        .fitbot-message.bot .message-content ul {
+            margin: 10px 0 0 20px;
+        }
+
+        .fitbot-message.bot .message-content li {
+            margin: 5px 0;
+            color: #b0b0b0;
+        }
+
+        /* Typing Indicator */
+        .fitbot-typing {
+            display: inline-block;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .fitbot-typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .fitbot-typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .fitbot-typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Input Area */
+        .fitbot-input-area {
+            display: flex;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            gap: 10px;
+            position: relative;
+        }
+
+        .fitbot-input-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(212, 175, 55, 0.3) 50%, 
+                transparent 100%);
+        }
+
+        .fitbot-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: rgba(10, 10, 10, 0.8);
+            color: #e0e0e0;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fitbot-input::placeholder {
+            color: #666;
+        }
+
+        .fitbot-input:focus {
+            border-color: #D4AF37;
+            box-shadow: 
+                0 0 0 3px rgba(212, 175, 55, 0.1),
+                inset 0 0 0 1px rgba(212, 175, 55, 0.1);
+            background: rgba(10, 10, 10, 0.95);
+        }
+
+        .fitbot-send {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            border: none;
+            color: #000;
+            width: 45px;
+            height: 45px;
+            border-radius: 35%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 12px rgba(212, 175, 55, 0.3),
+                inset 0 1px 0 rgba(244, 228, 193, 0.3);
+        }
+
+        .fitbot-send:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 
+                0 6px 20px rgba(212, 175, 55, 0.4),
+                inset 0 1px 0 rgba(244, 228, 193, 0.5);
+        }
+
+        .fitbot-send:active {
+            transform: scale(0.95);
+        }
+
+        .fitbot-send svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Scrollbar */
+        .fitbot-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .fitbot-messages::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-radius: 3px;
+        }
+
+        .fitbot-messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            border-radius: 3px;
+        }
+
+        .fitbot-messages::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #F4E4C1 0%, #D4AF37 100%);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 450px) {
+            .fitbot-container {
+                width: 100%;
+                height: 100%;
+                bottom: 0;
+                right: 0;
+                border-radius: 0;
+            }
+            
+            .fitbot-floating-button {
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+
+        /* Exercise Card Styles */
+        .exercise-card {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(35, 35, 35, 0.9) 100%);
+            padding: 15px;
+            border-radius: 16px;
+            margin: 10px 0;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(212, 175, 55, 0.05);
+        }
+
+        .exercise-card h4 {
+            color: #D4AF37;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(212, 175, 55, 0.2);
+        }
+
+        .exercise-item {
+            background: linear-gradient(135deg, #0a0a0a 0%, #151515 100%);
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            border-left: 3px solid #D4AF37;
+            color: #e0e0e0;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .exercise-item:hover {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Macro Display */
+        .macro-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 12px 0;
+            gap: 8px;
+        }
+
+        .macro-item {
+            text-align: center;
+            padding: 12px 8px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 14px;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .macro-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+            opacity: 0.6;
+        }
+
+        .macro-item .macro-value {
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #D4AF37 0%, #F4E4C1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .macro-item .macro-label {
+            font-size: 10px;
+            color: #888;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Elite Badge */
+        .elite-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: bold;
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Button (Minimized Chat) -->
+    <div class="fitbot-floating-button" id="fitbotToggle">
+        <div class="trainer-img-wrapper"></div>
+        <div class="fitbot-notification">!</div>
+    </div>
+
+    <!-- Main Chat Container -->
+    <div class="fitbot-container" id="fitbotContainer">
+        <div class="fitbot-header">
+            <div class="fitbot-header-left">
+                <div class="fitbot-avatar">
+                    <div class="trainer-stack">
+                        <i class="fas fa-user-tie"></i>
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                </div>
+                <div class="fitbot-info">
+                    <h3>ELITE FITNESS</h3>
+                    <span class="fitbot-status">🟢 Professional Trainer Online</span>
+                </div>
+            </div>
+            <button class="fitbot-close" id="fitbotClose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="fitbot-quick-actions">
+            <button class="fitbot-quick-btn" data-action="workout">💪 Workout</button>
+            <button class="fitbot-quick-btn" data-action="diet">🥗 Diet</button>
+            <button class="fitbot-quick-btn" data-action="supplements">💊 Supps</button>
+            <button class="fitbot-quick-btn" data-action="bmi">📊 BMI</button>
+            <button class="fitbot-quick-btn" data-action="calories">🔥 TDEE</button>
+        </div>
+
+        <div class="fitbot-messages" id="fitbotMessages">
+            <!-- Welcome Message -->
+            <div class="fitbot-message bot">
+                <div class="message-content">
+                    <strong>🏋️‍♂️ ELITE FITNESS TRAINER</strong><span class="elite-badge">CERTIFIED</span><br><br>
+                    Hello! I'm your certified personal trainer with 10+ years of experience.<br><br>
+                    My expertise includes:<br>
+                    <ul>
+                        <li>🎯 Customized training programs</li>
+                        <li>🏆 Competition prep & coaching</li>
+                        <li>💪 Strength & conditioning</li>
+                        <li>🥗 Sports nutrition planning</li>
+                        <li>📈 Body transformation specialist</li>
+                    </ul>
+                    <strong>Ready to achieve your fitness goals? Let's start your transformation!</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="fitbot-input-area">
+            <input 
+                type="text" 
+                class="fitbot-input" 
+                id="fitbotInput" 
+                placeholder="Ask your personal trainer..."
+                autocomplete="off"
+            >
+            <button class="fitbot-send" id="fitbotSend">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ELITE FITNESS - JAVASCRIPT CODE (keeping all previous functionality)
+        (function() {
+            'use strict';
+
+            // Elite Fitness Bot Class
+            class EliteFitnessBot {
+                constructor() {
+                    this.isOpen = false;
+                    this.messageHistory = [];
+                    this.initElements();
+                    this.initEventListeners();
+                    this.loadEliteKnowledge();
+                }
+
+                initElements() {
+                    this.toggle = document.getElementById('fitbotToggle');
+                    this.container = document.getElementById('fitbotContainer');
+                    this.closeBtn = document.getElementById('fitbotClose');
+                    this.messages = document.getElementById('fitbotMessages');
+                    this.input = document.getElementById('fitbotInput');
+                    this.sendBtn = document.getElementById('fitbotSend');
+                    this.quickBtns = document.querySelectorAll('.fitbot-quick-btn');
+                    this.notification = document.querySelector('.fitbot-notification');
+                }
+
+                initEventListeners() {
+                    this.toggle.addEventListener('click', () => this.toggleChat());
+                    this.closeBtn.addEventListener('click', () => this.closeChat());
+                    this.sendBtn.addEventListener('click', () => this.sendMessage());
+                    this.input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.sendMessage();
+                    });
+
+                    this.quickBtns.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const action = e.target.dataset.action;
+                            this.handleQuickAction(action);
+                        });
+                    });
+                }
+
+                loadEliteKnowledge() {
+                    this.knowledge = {
+                        exercises: {
+                            chest: [
+                                { name: 'Barbell Bench Press', sets: '5', reps: '5', rest: '3-4 min', note: 'Power' },
+                                { name: 'Incline DB Press', sets: '4', reps: '8-10', rest: '2 min', note: 'Mass' },
+                                { name: 'Cable Crossovers', sets: '4', reps: '12-15', rest: '60 sec', note: 'Definition' },
+                                { name: 'Diamond Push-ups', sets: '3', reps: 'Failure', rest: '60 sec', note: 'Finisher' }
+                            ],
+                            back: [
+                                { name: 'Deadlifts', sets: '5', reps: '3-5', rest: '4-5 min', note: 'Power' },
+                                { name: 'Weighted Pull-ups', sets: '4', reps: '6-8', rest: '2-3 min', note: 'Strength' },
+                                { name: 'Barbell Rows', sets: '4', reps: '8-10', rest: '90 sec', note: 'Mass' },
+                                { name: 'Cable Rows', sets: '4', reps: '12-15', rest: '60 sec', note: 'Volume' }
+                            ],
+                            legs: [
+                                { name: 'Back Squats', sets: '5', reps: '5', rest: '3-4 min', note: 'Power' },
+                                { name: 'Romanian Deadlifts', sets: '4', reps: '8-10', rest: '2 min', note: 'Hamstrings' },
+                                { name: 'Bulgarian Split Squats', sets: '3', reps: '10-12', rest: '90 sec', note: 'Unilateral' },
+                                { name: 'Leg Curls/Extensions', sets: '4', reps: '15-20', rest: '60 sec', note: 'Isolation' }
+                            ],
+                            shoulders: [
+                                { name: 'Military Press', sets: '5', reps: '5-6', rest: '3 min', note: 'Power' },
+                                { name: 'DB Shoulder Press', sets: '4', reps: '8-10', rest: '90 sec', note: 'Mass' },
+                                { name: 'Lateral Raises', sets: '4', reps: '12-15', rest: '60 sec', note: 'Width' },
+                                { name: 'Face Pulls', sets: '4', reps: '15-20', rest: '45 sec', note: 'Rear Delts' }
+                            ],
+                            arms: [
+                                { name: 'Close-Grip Bench', sets: '4', reps: '6-8', rest: '2 min', note: 'Triceps Power' },
+                                { name: 'Barbell Curls', sets: '4', reps: '8-10', rest: '90 sec', note: 'Biceps Mass' },
+                                { name: 'Overhead Extension', sets: '3', reps: '10-12', rest: '60 sec', note: 'Triceps' },
+                                { name: 'Hammer Curls', sets: '3', reps: '12-15', rest: '60 sec', note: 'Brachialis' }
+                            ],
+                            abs: [
+                                { name: 'Weighted Planks', sets: '4', reps: '60-90 sec', rest: '60 sec', note: 'Core Stability' },
+                                { name: 'Hanging Leg Raises', sets: '4', reps: '10-15', rest: '60 sec', note: 'Lower Abs' },
+                                { name: 'Cable Crunches', sets: '4', reps: '15-20', rest: '45 sec', note: 'Upper Abs' },
+                                { name: 'Russian Twists', sets: '3', reps: '30-40', rest: '45 sec', note: 'Obliques' }
+                            ]
+                        },
+                        supplements: {
+                            'muscle gain': {
+                                essential: [
+                                    'Whey Isolate (30-40g post-workout)',
+                                    'Creatine Monohydrate (5g daily, anytime)',
+                                    'Multivitamin (high-quality, daily)',
+                                    'Omega-3 (2-3g EPA/DHA daily)'
+                                ],
+                                advanced: [
+                                    'EAAs (10-15g intra-workout)',
+                                    'Beta-Alanine (3-5g daily, divided doses)',
+                                    'Citrulline Malate (8g pre-workout)',
+                                    'HMB (3g daily for anti-catabolic effect)'
+                                ]
+                            },
+                            'weight loss': {
+                                essential: [
+                                    'Whey Isolate (25-30g per serving)',
+                                    'Caffeine (200-400mg pre-workout)',
+                                    'Multivitamin (daily)',
+                                    'Omega-3 (3-4g daily)'
+                                ],
+                                advanced: [
+                                    'L-Carnitine (2-3g daily)',
+                                    'Yohimbine (0.2mg/kg fasted cardio)',
+                                    'Green Tea Extract (400-600mg EGCG)',
+                                    'CLA (3-6g daily with meals)'
+                                ]
+                            },
+                            'performance': {
+                                essential: [
+                                    'Creatine Monohydrate (5g daily)',
+                                    'Beta-Alanine (3-5g daily)',
+                                    'Citrulline (6-8g pre-workout)',
+                                    'Electrolytes (during training)'
+                                ],
+                                advanced: [
+                                    'Peak ATP (400mg pre-workout)',
+                                    'Betaine (2.5g daily)',
+                                    'Rhodiola (200-400mg)',
+                                    'Ashwagandha (600mg daily)'
+                                ]
+                            }
+                        },
+                        nutrition: {
+                            'muscle gain': {
+                                calories: 'TDEE + 400-600 calories',
+                                protein: '2.0-2.4g per kg body weight',
+                                carbs: '4-6g per kg body weight',
+                                fats: '1.0-1.5g per kg body weight',
+                                meals: '5-6 meals per day',
+                                timing: 'Protein every 3-4 hours, carbs around training',
+                                hydration: '4-5L water daily',
+                                tips: [
+                                    '🎯 Track macros precisely',
+                                    '⚡ Pre-workout: Carbs + caffeine',
+                                    '💪 Post-workout: Protein + carbs within 30 min',
+                                    '🌙 Casein protein before bed',
+                                    '📈 Weekly progress photos'
+                                ]
+                            },
+                            'weight loss': {
+                                calories: 'TDEE - 400-600 calories',
+                                protein: '2.4-3.0g per kg body weight',
+                                carbs: '1.5-2.5g per kg body weight',
+                                fats: '0.8-1.0g per kg body weight',
+                                meals: '4-5 meals per day',
+                                timing: 'Carbs around training only',
+                                hydration: '4-5L water daily',
+                                tips: [
+                                    '🎯 Weigh food for accuracy',
+                                    '🔥 Morning fasted cardio',
+                                    '💊 Take BCAAs during training',
+                                    '🥗 Volume eating with vegetables',
+                                    '📊 Weekly weigh-ins, same time'
+                                ]
+                            },
+                            'performance': {
+                                calories: 'Match training demands',
+                                protein: '1.8-2.2g per kg body weight',
+                                carbs: '5-8g per kg body weight',
+                                fats: '1.0-1.2g per kg body weight',
+                                meals: '4-6 meals per day',
+                                timing: 'Strategic carb loading',
+                                hydration: '5-6L water + electrolytes',
+                                tips: [
+                                    '⚡ Carb cycling based on training',
+                                    '💪 Intra-workout nutrition',
+                                    '🎯 Nutrient timing optimization',
+                                    '📈 Performance metrics tracking',
+                                    '🔬 Blood work monitoring'
+                                ]
+                            }
+                        }
+                    };
+                }
+
+                toggleChat() {
+                    this.isOpen = !this.isOpen;
+                    if (this.isOpen) {
+                        this.container.classList.add('active');
+                        this.toggle.style.display = 'none';
+                        this.notification.style.display = 'none';
+                    }
+                }
+
+                closeChat() {
+                    this.isOpen = false;
+                    this.container.classList.remove('active');
+                    this.toggle.style.display = 'flex';
+                }
+
+                sendMessage() {
+                    const message = this.input.value.trim();
+                    if (!message) return;
+
+                    // Add user message
+                    this.addMessage(message, 'user');
+                    this.input.value = '';
+
+                    // Show typing indicator
+                    this.showTyping();
+
+                    // Process and respond
+                    setTimeout(() => {
+                        this.removeTyping();
+                        const response = this.generateEliteResponse(message);
+                        this.addMessage(response, 'bot');
+                    }, 1000);
+                }
+
+                addMessage(content, sender) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `fitbot-message ${sender}`;
+                    
+                    const messageContent = document.createElement('div');
+                    messageContent.className = 'message-content';
+                    messageContent.innerHTML = content;
+                    
+                    messageDiv.appendChild(messageContent);
+                    this.messages.appendChild(messageDiv);
+                    this.scrollToBottom();
+                }
+
+                showTyping() {
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'fitbot-message bot typing-message';
+                    typingDiv.innerHTML = `
+                        <div class="fitbot-typing">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    `;
+                    this.messages.appendChild(typingDiv);
+                    this.scrollToBottom();
+                }
+
+                removeTyping() {
+                    const typing = document.querySelector('.typing-message');
+                    if (typing) typing.remove();
+                }
+
+                scrollToBottom() {
+                    this.messages.scrollTop = this.messages.scrollHeight;
+                }
+
+                generateEliteResponse(message) {
+                    const lower = message.toLowerCase();
+
+                    // Workout requests
+                    if (lower.includes('workout') || lower.includes('exercise') || lower.includes('train')) {
+                        return this.getEliteWorkoutResponse(lower);
+                    }
+
+                    // Diet/Nutrition requests
+                    if (lower.includes('diet') || lower.includes('nutrition') || lower.includes('eat') || lower.includes('food')) {
+                        return this.getEliteNutritionResponse(lower);
+                    }
+
+                    // Supplement requests
+                    if (lower.includes('supplement') || lower.includes('protein') || lower.includes('creatine')) {
+                        return this.getEliteSupplementResponse(lower);
+                    }
+
+                    // BMI calculation
+                    if (lower.includes('bmi')) {
+                        return this.getEliteBMIResponse();
+                    }
+
+                    // Calorie/TDEE calculation
+                    if (lower.includes('calorie') || lower.includes('tdee')) {
+                        return this.getEliteCalorieResponse();
+                    }
+
+                    // Muscle gain
+                    if (lower.includes('gain muscle') || lower.includes('build muscle') || lower.includes('bulk')) {
+                        return this.getEliteMuscleGainResponse();
+                    }
+
+                    // Weight loss
+                    if (lower.includes('lose weight') || lower.includes('fat loss') || lower.includes('cut') || lower.includes('shred')) {
+                        return this.getEliteWeightLossResponse();
+                    }
+
+                    // Default response
+                    return this.getEliteDefaultResponse();
+                }
+
+                getEliteWorkoutResponse(message) {
+                    // Check for specific muscle groups
+                    for (const [muscle, exercises] of Object.entries(this.knowledge.exercises)) {
+                        if (message.includes(muscle)) {
+                            let response = `<strong>🏋️‍♂️ ELITE ${muscle.toUpperCase()} TRAINING</strong><span class="elite-badge">PRO</span><br><br>`;
+                            response += '<div class="exercise-card">';
+                            exercises.forEach((ex, index) => {
+                                response += `
+                                    <div class="exercise-item">
+                                        <span><strong>${index + 1}.</strong> ${ex.name} [${ex.note}]</span>
+                                        <span><strong>${ex.sets} × ${ex.reps}</strong></span>
+                                    </div>
+                                `;
+                            });
+                            response += '</div>';
+                            response += '<br><strong>🎯 COACHING POINTS:</strong><br>';
+                            response += '• Warm up: 10 min cardio + dynamic stretching<br>';
+                            response += '• Form check: Record yourself or use mirrors<br>';
+                            response += '• Tempo: 2-1-3 (concentric-pause-eccentric)<br>';
+                            response += '• Breathing: Exhale on exertion<br>';
+                            response += '• Recovery: Stretch + foam roll post-workout<br><br>';
+                            response += '<strong>💡 Trainer Tip: Focus on quality over quantity!</strong>';
+                            return response;
+                        }
+                    }
+
+                    // General workout response
+                    return `
+                        <strong>🏋️‍♂️ ELITE FITNESS TRAINING PROGRAMS</strong><br><br>
+                        As your certified trainer, select your focus area:<br><br>
+                        <strong>UPPER BODY DEVELOPMENT:</strong><br>
+                        • <strong>CHEST</strong> - Powerful pecs<br>
+                        • <strong>BACK</strong> - Wide & thick<br>
+                        • <strong>SHOULDERS</strong> - 3D delts<br>
+                        • <strong>ARMS</strong> - Sleeve busters<br><br>
+                        <strong>LOWER BODY & CORE:</strong><br>
+                        • <strong>LEGS</strong> - Quad & hamstring development<br>
+                        • <strong>ABS</strong> - Six-pack definition<br><br>
+                        <em>Which muscle group would you like to train today?</em>
+                    `;
+                }
+
+                getEliteNutritionResponse(message) {
+                    let goal = 'performance';
+                    if (message.includes('gain') || message.includes('bulk')) goal = 'muscle gain';
+                    if (message.includes('lose') || message.includes('cut')) goal = 'weight loss';
+
+                    const nutrition = this.knowledge.nutrition[goal];
+                    
+                    return `
+                        <strong>🥗 PERSONALIZED NUTRITION PLAN</strong><span class="elite-badge">CERTIFIED</span><br>
+                        <em>Goal: ${goal.toUpperCase()}</em><br><br>
+                        <div class="macro-display">
+                            <div class="macro-item">
+                                <div class="macro-value">${nutrition.protein}</div>
+                                <div class="macro-label">Protein</div>
+                            </div>
+                            <div class="macro-item">
+                                <div class="macro-value">${nutrition.carbs}</div>
+                                <div class="macro-label">Carbs</div>
+                            </div>
+                            <div class="macro-item">
+                                <div class="macro-value">${nutrition.fats}</div>
+                                <div class="macro-label">Fats</div>
+                            </div>
+                        </div>
+                        <strong>📋 YOUR DAILY PROTOCOL:</strong><br>
+                        • Calories: <strong>${nutrition.calories}</strong><br>
+                        • Meals: <strong>${nutrition.meals}</strong><br>
+                        • Timing: <strong>${nutrition.timing}</strong><br>
+                        • Hydration: <strong>${nutrition.hydration}</strong><br><br>
+                        <strong>🎯 COACHING STRATEGIES:</strong><br>
+                        ${nutrition.tips.map(tip => `${tip}`).join('<br>')}<br><br>
+                        <em>Remember: Nutrition is 70% of your results!</em>
+                    `;
+                }
+
+                getEliteSupplementResponse(message) {
+                    let goal = 'performance';
+                    if (message.includes('muscle') || message.includes('gain')) goal = 'muscle gain';
+                    if (message.includes('lose') || message.includes('cut')) goal = 'weight loss';
+
+                    const supps = this.knowledge.supplements[goal];
+                    
+                    return `
+                        <strong>💊 EVIDENCE-BASED SUPPLEMENT PROTOCOL</strong><span class="elite-badge">EXPERT</span><br>
+                        <em>Optimized for: ${goal.toUpperCase()}</em><br><br>
+                        <strong>✅ TIER 1 (Essential):</strong><br>
+                        ${supps.essential.map(s => `• ${s}`).join('<br>')}<br><br>
+                        <strong>⚡ TIER 2 (Advanced):</strong><br>
+                        ${supps.advanced.map(s => `• ${s}`).join('<br>')}<br><br>
+                        <strong>⏰ OPTIMAL TIMING:</strong><br>
+                        • Wake up: Multivitamin + Omega-3<br>
+                        • Pre-workout (30min): Citrulline + Caffeine<br>
+                        • Post-workout (immediately): Whey + Creatine<br>
+                        • Before bed: Casein or ZMA<br><br>
+                        <strong>⚠️ Professional Note: Supplements enhance, not replace, proper nutrition!</strong>
+                    `;
+                }
+
+                getEliteBMIResponse() {
+                    return `
+                        <strong>📊 BODY COMPOSITION ASSESSMENT</strong><span class="elite-badge">ANALYSIS</span><br><br>
+                        <strong>Let's calculate your metrics:</strong><br>
+                        Please provide:<br>
+                        • Height (cm or ft/in)<br>
+                        • Weight (kg or lbs)<br>
+                        • Age & Gender (for body fat estimate)<br><br>
+                        <strong>ATHLETIC STANDARDS:</strong><br>
+                        • <18.5: Underweight - Need mass gain protocol<br>
+                        • 18.5-24.9: Athletic range - Optimal for most<br>
+                        • 25-29.9: Muscular build - Common for lifters<br>
+                        • 30+: Heavyweight - Powerlifter/strongman<br><br>
+                        <strong>💪 Professional Insight:</strong><br>
+                        As a trainer, I focus more on body composition than BMI. Many of my athletic clients have "overweight" BMI but single-digit body fat!<br><br>
+                        <em>Share your stats for a complete assessment!</em>
+                    `;
+                }
+
+                getEliteCalorieResponse() {
+                    return `
+                        <strong>🔥 METABOLIC RATE CALCULATION</strong><span class="elite-badge">TDEE</span><br><br>
+                        <strong>PRECISION FORMULA:</strong><br><br>
+                        <strong>FOR MEN:</strong><br>
+                        BMR = (10 × weight[kg]) + (6.25 × height[cm]) - (5 × age) + 5<br><br>
+                        <strong>FOR WOMEN:</strong><br>
+                        BMR = (10 × weight[kg]) + (6.25 × height[cm]) - (5 × age) - 161<br><br>
+                        <strong>ACTIVITY FACTORS:</strong><br>
+                        • Sedentary (office): × 1.2<br>
+                        • Light (1-3 days): × 1.375<br>
+                        • Moderate (3-5 days): × 1.55<br>
+                        • Active (6-7 days): × 1.725<br>
+                        • Athlete (2x daily): × 1.9+<br><br>
+                        <strong>🎯 COACHING ADJUSTMENTS:</strong><br>
+                        • Lean bulk: +300-500 calories<br>
+                        • Aggressive bulk: +500-750 calories<br>
+                        • Slow cut: -300-500 calories<br>
+                        • Rapid cut: -500-750 calories<br><br>
+                        <em>Need your personalized plan? Share your details!</em>
+                    `;
+                }
+
+                getEliteMuscleGainResponse() {
+                    return `
+                        <strong>💪 HYPERTROPHY SPECIALIZATION PROGRAM</strong><span class="elite-badge">MASS</span><br><br>
+                        <strong>12-WEEK MUSCLE BUILDING PROTOCOL:</strong><br><br>
+                        <strong>📅 WEEKS 1-4: FOUNDATION</strong><br>
+                        • Upper/Lower split (4x/week)<br>
+                        • Compound focus: 5×5 protocol<br>
+                        • Calories: +400 above TDEE<br>
+                        • Sleep: 8+ hours mandatory<br><br>
+                        <strong>📅 WEEKS 5-8: VOLUME PHASE</strong><br>
+                        • Push/Pull/Legs (6x/week)<br>
+                        • Volume: 16-20 sets per muscle<br>
+                        • Calories: +500-600 above TDEE<br>
+                        • Add intra-workout carbs<br><br>
+                        <strong>📅 WEEKS 9-12: INTENSITY</strong><br>
+                        • Body part split (5x/week)<br>
+                        • Intensity techniques: drops, supersets<br>
+                        • Calories: +600-750 above TDEE<br>
+                        • Week 12: Deload<br><br>
+                        <strong>💊 SUPPLEMENT STACK:</strong><br>
+                        • Creatine: 5g daily<br>
+                        • Whey: 40g post-workout<br>
+                        • EAAs: During training<br><br>
+                        <strong>📈 EXPECTED RESULTS:</strong><br>
+                        8-12 lbs total gain (4-6 lbs muscle)<br><br>
+                        <em>Ready to grow? Let's start! 💪</em>
+                    `;
+                }
+
+                getEliteWeightLossResponse() {
+                    return `
+                        <strong>🔥 FAT LOSS TRANSFORMATION</strong><span class="elite-badge">SHRED</span><br><br>
+                        <strong>8-WEEK CUTTING PROTOCOL:</strong><br><br>
+                        <strong>⚡ WEEKS 1-2: METABOLIC RESET</strong><br>
+                        • Full body training 3x/week<br>
+                        • HIIT cardio 2x/week<br>
+                        • Deficit: -300 calories<br>
+                        • Track everything<br><br>
+                        <strong>🔥 WEEKS 3-5: ACCELERATION</strong><br>
+                        • Upper/Lower split 4x/week<br>
+                        • Cardio: 4x/week (2 HIIT, 2 LISS)<br>
+                        • Deficit: -500 calories<br>
+                        • Carb cycling begins<br><br>
+                        <strong>💪 WEEKS 6-8: FINAL PUSH</strong><br>
+                        • PPL split 5x/week<br>
+                        • Daily cardio (fasted AM)<br>
+                        • Deficit: -600-750 calories<br>
+                        • Refeed days: 1x/week<br><br>
+                        <strong>💊 FAT LOSS STACK:</strong><br>
+                        • Caffeine: 200-400mg pre-workout<br>
+                        • L-Carnitine: 3g daily<br>
+                        • Protein: 1g per lb bodyweight<br><br>
+                        <strong>📊 REALISTIC RESULTS:</strong><br>
+                        • 8-16 lbs fat loss<br>
+                        • Maintain 95% muscle mass<br>
+                        • Visible abs by week 8<br><br>
+                        <em>Let's get shredded! 🔥</em>
+                    `;
+                }
+
+                getEliteDefaultResponse() {
+                    const responses = [
+                        "<strong>🏋️‍♂️ ELITE FITNESS TRAINER</strong> - I'm here to coach you to success! Ask about training, nutrition, or supplements.",
+                        "Welcome! I'm your certified trainer at <strong>ELITE FITNESS</strong>. What are your fitness goals?",
+                        "Hey there! As your personal trainer, I'm ready to help you transform. What would you like to work on?",
+                        "<strong>ELITE FITNESS</strong> Professional Trainer here. Let's discuss your workout plan, diet, or any fitness questions!"
+                    ];
+                    return responses[Math.floor(Math.random() * responses.length)];
+                }
+
+                handleQuickAction(action) {
+                    const actions = {
+                        workout: "Create a chest workout for muscle growth",
+                        diet: "Design a muscle building diet plan",
+                        supplements: "What supplements do you recommend?",
+                        bmi: "Calculate my BMI and body composition",
+                        calories: "Calculate my daily calorie needs"
+                    };
+
+                    this.input.value = actions[action];
+                    this.sendMessage();
+                }
+            }
+
+            // Initialize Elite Fitness Bot when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    window.eliteFitnessBot = new EliteFitnessBot();
+                });
+            } else {
+                window.eliteFitnessBot = new EliteFitnessBot();
+            }
+
+            // Optional: Auto-open after 5 seconds
+            setTimeout(() => {
+                const notification = document.querySelector('.fitbot-notification');
+                if (notification) {
+                    notification.style.animation = 'pulse 1s infinite';
+                }
+            }, 5000);
+        })();
+    </script>
+</body>
+</html>
